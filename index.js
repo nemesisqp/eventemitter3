@@ -1,5 +1,7 @@
 'use strict';
 
+var BlueBird = require('bluebird');
+
 var has = Object.prototype.hasOwnProperty
   , prefix = '~';
 
@@ -111,7 +113,7 @@ EventEmitter.prototype.listeners = function listeners(event, exists) {
  * @returns {Boolean} `true` if the event had listeners, else `false`.
  * @api public
  */
-EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+EventEmitter.prototype.emit = BlueBird.coroutine(function* emit(event, a1, a2, a3, a4, a5) {
   var evt = prefix ? prefix + event : event;
 
   if (!this._events[evt]) return false;
@@ -120,24 +122,24 @@ EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
     , len = arguments.length
     , args
     , i;
-
+console.log('on emit', evt);
   if (listeners.fn) {
     if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
 
     switch (len) {
-      case 1: return listeners.fn.call(listeners.context), true;
-      case 2: return listeners.fn.call(listeners.context, a1), true;
-      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
-      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
-      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+      case 1: yield BlueBird.resolve(listeners.fn.call(listeners.context)); return true;
+      case 2: yield BlueBird.resolve(listeners.fn.call(listeners.context, a1)); return true;
+      case 3: yield BlueBird.resolve(listeners.fn.call(listeners.context, a1, a2)); return true;
+      case 4: yield BlueBird.resolve(listeners.fn.call(listeners.context, a1, a2, a3)); return true;
+      case 5: yield BlueBird.resolve(listeners.fn.call(listeners.context, a1, a2, a3, a4)); return true;
+      case 6: yield BlueBird.resolve(listeners.fn.call(listeners.context, a1, a2, a3, a4, a5)); return true;
     }
 
     for (i = 1, args = new Array(len -1); i < len; i++) {
       args[i - 1] = arguments[i];
     }
 
-    listeners.fn.apply(listeners.context, args);
+    yield BlueBird.resolve(listeners.fn.apply(listeners.context, args));
   } else {
     var length = listeners.length
       , j;
@@ -146,22 +148,22 @@ EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
       if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
 
       switch (len) {
-        case 1: listeners[i].fn.call(listeners[i].context); break;
-        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
-        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
-        case 4: listeners[i].fn.call(listeners[i].context, a1, a2, a3); break;
+        case 1: yield BlueBird.resolve(listeners[i].fn.call(listeners[i].context)); break;
+        case 2: yield BlueBird.resolve(listeners[i].fn.call(listeners[i].context, a1)); break;
+        case 3: yield BlueBird.resolve(listeners[i].fn.call(listeners[i].context, a1, a2)); break;
+        case 4: yield BlueBird.resolve(listeners[i].fn.call(listeners[i].context, a1, a2, a3)); break;
         default:
           if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
             args[j - 1] = arguments[j];
           }
 
-          listeners[i].fn.apply(listeners[i].context, args);
+          yield BlueBird.resolve(listeners[i].fn.apply(listeners[i].context, args));
       }
     }
   }
 
   return true;
-};
+});
 
 /**
  * Add a listener for a given event.
