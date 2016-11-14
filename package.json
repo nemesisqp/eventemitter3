@@ -15,6 +15,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/nemesisqp/eventemitter3-yield.git"
+  },  
+  "dependencies": {
+    "bluebird": "^3.4.6"
   },
   "keywords": [
     "EventEmitter",
