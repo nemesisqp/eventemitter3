@@ -1,5 +1,5 @@
 {
-  "name": "eventemitter3",
+  "name": "eventemitter3-yield",
   "version": "2.0.2",
   "description": "EventEmitter3 focuses on performance while maintaining a Node.js AND browser compatible interface.",
   "main": "index.js",
